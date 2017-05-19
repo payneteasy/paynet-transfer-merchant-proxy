@@ -1,0 +1,11 @@
+{
+  "modelPackage": "com.payneteasy.merchantproxy.generated.model",
+  "apiPackage": "com.payneteasy.merchantproxy.generated.controller",
+  "sourceFolder": "paynet-transfer-merchant-proxy-web/src/main/java",
+  "fullJavaUtil": true,
+  "interfaceOnly": true,
+  "useBeanValidation": true,
+  "dateLibrary": "legacy",
+  "library": "spring-mvc",
+  "hideGenerationTimestamp": true
+}

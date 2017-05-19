@@ -1,0 +1,49 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+
+    dependencies {
+        classpath 'com.h2database:h2:1.4.195'
+    }
+}
+
+plugins {
+    id "org.flywaydb.flyway" version "4.1.2"
+}
+
+apply plugin: 'maven'
+apply plugin: 'java'
+
+group = 'com.payneteasy.transfer-merchant-proxy'
+
+flyway {
+    url = 'jdbc:h2:~/paynetmerchantproxydb'
+    user = 'paynetmerchantproxydb'
+    password = 'paynetmerchantproxydb'
+}
+
+jar {
+    manifest {
+        attributes "Main-Class": "com.payneteasy.merchantproxy.db.FlywayLauncher"
+    }
+
+    from {
+        project.buildscript.configurations.classpath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    def h2dbVersion = '1.4.195'
+    def flywayVersion = '4.1.2'
+    compile "org.flywaydb:flyway-core:${flywayVersion}"
+    compile "com.h2database:h2:${h2dbVersion}"
+}

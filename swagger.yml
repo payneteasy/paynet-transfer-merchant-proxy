@@ -1,0 +1,390 @@
+swagger: 2.0
+info:
+  title: Payneteasy transfer merchant proxy server
+  version: 0.1
+paths:
+  /auth/request-access-token:
+    get:
+      summary: Generate access token for transfer operation
+      produces:
+      - application/json
+      responses:
+        '200':
+          description: Randomly generated access token
+          schema:
+            $ref: '#/definitions/AccessTokenResponse'
+        '500':
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /transfer/get-rate:
+    post:
+      summary: Get transfer rates and limits configuration
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: sessionData
+        in: body
+        required: true
+        description: Session info
+        schema:
+          $ref: '#/definitions/RatesRequest'
+      responses:
+        '200':
+          description: Rates and limits data
+          schema:
+            $ref: '#/definitions/RatesResponse'
+        '500':
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /transfer/initiate-transfer:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      summary: Initiate transfer request
+      parameters:
+      - name: initiateTransferData
+        in: body
+        description: Device info, location data, session info, amount
+        required: true
+        schema:
+          $ref: '#/definitions/InitiateTransferRequest'
+      responses:
+        '200':
+          description: Enpoint config, rates, session tokens to perform transfer request
+          schema:
+            $ref: '#/definitions/InitiateTransferResponse'
+        '400':
+          description: Request data is invalid
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '500':
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /transfer/{invoiceId}/check:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      summary: Check transfer response
+      parameters:
+      - name: invoiceId
+        in: path
+        type: string
+        description: Previously generated transfer transaction identifier
+        required: true
+      - name: checkRequestData
+        in: body
+        description: Transaction data to check
+        required: true
+        schema:
+          $ref: '#/definitions/CheckTransferRequest'
+      responses:
+        '200':
+          description: Check signature to verify and other transaction data
+          schema:
+            $ref: '#/definitions/CheckTransferResponse'
+        '400':
+          description: Request data is invalid
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '500':
+          description: Server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+definitions:
+  AccessTokenResponse:
+    type: object
+    properties:
+      session:
+        type: object
+        properties:
+          accessToken:
+            type: string
+            description: Access token key
+  RatesRequest:
+    type: object
+    required:
+    - consumer
+    - session
+    properties:
+      consumer:
+        type: object
+        required:
+        - device
+        properties:
+          device:
+            type: object
+            required:
+            - serialNumber
+            properties:
+              serialNumber:
+                type: string
+                description: Consumer's device serial number
+      session:
+        type: object
+        required:
+        - accessToken
+        properties:
+          accessToken:
+            type: string
+            description: Access Token Key
+  RatesResponse:
+    type: object
+    properties:
+      rateInterest:
+        type: number
+        format: double
+        description: Transfer rate interest (percent)
+      rateMin:
+        type: number
+        format: double
+        description: Minimum commission amount
+      limitMin:
+        type: number
+        format: double
+        description: Minimum transfer amount
+      limitMax:
+        type: number
+        format: double
+        description: Maximum transfer amount
+  InitiateTransferRequest:
+    type: object
+    required:
+    - consumer
+    - transaction
+    properties:
+      consumer:
+        type: object
+        required:
+        - device
+        properties:
+          device:
+            type: object
+            required:
+            - serialNumber
+            properties:
+              imei:
+                type: string
+                description: The consumer’s device international mobile equipment identity
+              serialNumber:
+                type: string
+                description: The consumer's device serial number
+          ipAddresses:
+            type: array
+            description: Consumer's IP addresses
+            items:
+              type: string
+              minLength: 7
+              maxLength: 15
+      location:
+        type: object
+        properties:
+          lat:
+            type: number
+            format: double
+            description: The latitude specified in the range of -90.0 through +90.0, both inclusive
+          lng:
+            type: number
+            format: double
+            description: The longitude specified in the range -180.0 through +180.0, both inclusive
+      session:
+        type: object
+        properties:
+          accessToken:
+            type: string
+            description: Access token key
+      transaction:
+        type: object
+        required:
+        - amountCentis
+        - currency
+        properties:
+          amountCentis:
+            type: integer
+            format: int64
+            description: Transaction amount, 1.00 EUR = 100 centis
+          currency:
+            type: string
+            pattern: ^[A-Z]{3}$
+            description: Transaction currency, upper case letters (ISO 4217 alpha code)
+  InitiateTransferResponse:
+    type: object
+    properties:
+      endpointId:
+        type: string
+        description: Entry point identifier for transfer transaction
+      invoiceId:
+        type: string
+        description: Transfer transaction identifier
+      rates:
+        type: object
+        properties:
+          min:
+            type: string
+            description: Possible minimum commission amount
+          max:
+            type: string
+            description: Possible maximum commission amount
+      session:
+        type: object
+        properties:
+          nonce:
+            type: string
+            description: Random string, uniquely generated by the proxy
+          signature:
+            type: string
+            description: Checksum generated by hmac-sha1 of accessToken + device.serialNumber + endpointId + nonce + invoiceId + amountCentis + currency
+  CheckTransferRequest:
+    type: object
+    required:
+    - consumer
+    - session
+    properties:
+      consumer:
+        type: object
+        required:
+        - device
+        properties:
+          device:
+            type: object
+            required:
+            - serialNumber
+            properties:
+              serialNumber:
+                type: string
+                description: The consumer’s device serial number
+      session:
+        type: object
+        required:
+        - accessToken
+        - nonce
+        - signature
+        - token
+        properties:
+          accessToken:
+            type: string
+            description: The consumer’s access token key
+          nonce:
+            type: string
+            description: Value received by client within initial transfer response
+          signature:
+            type: string
+            description: Value received by client within initial transfer response
+          token:
+            type: string
+            description: The session token of transfer transaction
+      sourceOfFunds:
+        type: object
+        properties:
+          reference:
+            type: object
+            properties:
+              clientCardId:
+                type: string
+                description: The source card reference identifier (on client side)
+      destinationOfFunds:
+        type: object
+        properties:
+          reference:
+            type: object
+            properties:
+              clientCardId:
+                type: string
+                description: The destination card reference identifier (on client side)
+  CheckTransferResponse:
+    type: object
+    properties:
+      consumer:
+        type: object
+        properties:
+          email:
+            type: string
+            description: The consumer’s email address
+      destinationOfFunds:
+        type: object
+        properties:
+          card:
+            type: object
+            properties:
+              number:
+                type: string
+          reference:
+            type: object
+            properties:
+              serverCardId:
+                type: string
+                description: The destination card reference identifier (on server side)
+      invoiceId:
+        type: string
+        description: Transfer transaction identifier
+      session:
+        type: object
+        properties:
+          checkSignature:
+            type: string
+            description: Checksum generated by hmac-sha1 of concatenate serialNumber + nonce + destinationOfFunds.reference.serverCardId (if present) + endpointId + invoiceId + sourceOfFunds.reference.serverCardId (if present)
+          nonce:
+            type: string
+            description: Random string, uniquely generated by the proxy
+          token:
+            type: string
+      sourceOfFunds:
+        type: object
+        properties:
+          card:
+            type: object
+            properties:
+              expiry:
+                type: object
+                properties:
+                  month:
+                    type: integer
+                    format: int32
+                  year:
+                    type: integer
+                    format: int32
+              holder:
+                type: object
+                properties:
+                  firstName:
+                    type: string
+                  lastName:
+                    type: string
+              number:
+                type: string
+          reference:
+            type: object
+            properties:
+              serverCardId:
+                type: string
+  ErrorResponse:
+    type: object
+    properties:
+      error:
+        type: object
+        properties:
+          cause:
+            type: string
+            description: 'The cause of the error, possible values: FILTERED, INVALID_REQUEST, SERVER_FAILED, SERVER_UNAVAILABLE'
+            enum:
+            - FILTERED
+            - INVALID_REQUEST
+            - SERVER_FAILED
+            - SERVER_UNAVAILABLE
+          code:
+            type: string
+            description: The unique error code
+          message:
+            type: string
+            description: the description of the error
+      invoiceId:
+        type: string
+        description: Transfer transaction identifier

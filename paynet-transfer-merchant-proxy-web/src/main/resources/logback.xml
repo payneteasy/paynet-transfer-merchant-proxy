@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <jmxConfigurator />
+
+    <property name="project" value="paynet-transfer-merchant-proxy" />
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder>
+        <pattern>%d{yyyy.MM.dd HH:mm:ss.SSS} %-5level %X{errorid} %c{25} : %msg%n</pattern>
+      </encoder>
+    </appender>
+
+    <appender name="ERROR.LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+              <level>WARN</level>
+        </filter>
+        <file>${catalina.base}/logs/${project}/error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+              <fileNamePattern>${catalina.base}/logs/${project}/error.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>[%thread] %d{yyyy.MM.dd HH:mm:ss.SSS} %-5level %X{errorid} %c{25} : %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="APPLICATION.LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${catalina.base}/logs/${project}/application.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${catalina.base}/logs/${project}/application.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>[%thread] %d{yyyy.MM.dd HH:mm:ss.SSS} %-5level %X{errorid} %c{25} : %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="SPRING.LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${catalina.base}/logs/${project}/spring.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+              <fileNamePattern>${catalina.base}/logs/${project}/spring.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>[%thread] %d{yyyy.MM.dd HH:mm:ss.SSS} %-5level %c{25} : %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="com.payneteasy.merchantproxy">
+        <level value="debug"/>
+        <appender-ref ref="APPLICATION.LOG"/>
+    </logger>
+
+    <logger name="org.springframework">
+        <level value="info"/>
+        <appender-ref ref="SPRING.LOG"/>
+    </logger>
+
+    <logger name="org.apache">
+        <level value="info"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <root>
+        <level value="info"/>
+        <appender-ref ref="ERROR.LOG"/>
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+</configuration>

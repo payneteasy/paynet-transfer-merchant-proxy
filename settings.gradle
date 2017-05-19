@@ -1,0 +1,1 @@
+include 'paynet-transfer-merchant-proxy-web', 'paynet-transfer-merchant-proxy-db', 'paynet-transfer-merchant-proxy-web-integration-test'
