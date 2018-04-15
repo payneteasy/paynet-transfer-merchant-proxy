@@ -15,7 +15,7 @@ public class CheckTransferRequest   {
   @JsonProperty("consumer")
   @Valid
   @NotNull
-  private CheckTransferRequestConsumer consumer = null;
+  private RequestConsumer consumer = null;
 
   @JsonProperty("session")
   @Valid
@@ -30,7 +30,7 @@ public class CheckTransferRequest   {
   @Valid
   private CheckTransferRequestDestinationOfFunds destinationOfFunds = null;
 
-  public CheckTransferRequest consumer(CheckTransferRequestConsumer consumer) {
+  public CheckTransferRequest consumer(RequestConsumer consumer) {
     this.consumer = consumer;
     return this;
   }
@@ -40,11 +40,11 @@ public class CheckTransferRequest   {
    * @return consumer
   **/
   @ApiModelProperty(value = "")
-  public CheckTransferRequestConsumer getConsumer() {
+  public RequestConsumer getConsumer() {
     return consumer;
   }
 
-  public void setConsumer(CheckTransferRequestConsumer consumer) {
+  public void setConsumer(RequestConsumer consumer) {
     this.consumer = consumer;
   }
 

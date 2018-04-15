@@ -1,18 +1,12 @@
 package com.payneteasy.merchantproxy.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.payneteasy.merchantproxy.generated.model.*;
 import com.payneteasy.merchantproxy.model.TransferData;
 import com.payneteasy.merchantproxy.controller.ApplicationException;
 import com.payneteasy.merchantproxy.dao.TransferDataDao;
-import com.payneteasy.merchantproxy.generated.model.CheckTransferRequest;
-import com.payneteasy.merchantproxy.generated.model.CheckTransferResponse;
-import com.payneteasy.merchantproxy.generated.model.CheckTransferResponseSession;
-import com.payneteasy.merchantproxy.generated.model.InitiateTransferRequest;
-import com.payneteasy.merchantproxy.generated.model.InitiateTransferRequestTransaction;
-import com.payneteasy.merchantproxy.generated.model.InitiateTransferResponse;
-import com.payneteasy.merchantproxy.generated.model.InitiateTransferResponseRates;
-import com.payneteasy.merchantproxy.generated.model.InitiateTransferResponseSession;
 import com.payneteasy.merchantproxy.util.CacheUtil;
+import com.payneteasy.merchantproxy.util.CardHelper;
 import com.payneteasy.merchantproxy.util.StrUtil;
 
 import java.io.IOException;
@@ -21,6 +15,7 @@ import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.Date;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -194,16 +189,60 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     final CheckTransferResponse response = new CheckTransferResponse();
+
+    //invoiceId
     response.setInvoiceId(invoiceId);
 
+    //sourceOfFunds(optional) -> serverCardReference
+    if(request.getSourceOfFunds() != null && request.getSourceOfFunds().getReference() != null && request.getSourceOfFunds().getReference().getClientCardId() != null){
+      Long serverCardId =  CacheUtil.getServerCardId(request.getSourceOfFunds().getReference().getClientCardId());
+      if(serverCardId == null){
+        logger.error("Can not find serverCardId from current clientCardId = " + request.getSourceOfFunds().getReference().getClientCardId());
+        throw new ApplicationException(new IllegalArgumentException("Can not find serverCardId on current clientCardId = " + request.getSourceOfFunds().getReference().getClientCardId()), transferData.getId(), ApplicationException.RequestType.TRANSFER_CHECK);
+      }
+      final CheckTransferResponseSourceOfFundsReference sourceOfFundsReference = new CheckTransferResponseSourceOfFundsReference();
+      sourceOfFundsReference.setServerCardId(String.valueOf(serverCardId));
+      final CheckTransferResponseSourceOfFunds sourceOfFunds = new CheckTransferResponseSourceOfFunds();
+      sourceOfFunds.setReference(sourceOfFundsReference);
+      response.setSourceOfFunds(sourceOfFunds);
+    }
+
+    //destinationOfFunds(optional) -> serverCardReference
+    if(request.getDestinationOfFunds() != null && request.getDestinationOfFunds().getReference() != null && request.getDestinationOfFunds().getReference().getClientCardId() != null){
+      Long serverCardId = CacheUtil.getServerCardId(request.getDestinationOfFunds().getReference().getClientCardId());
+      if(serverCardId == null){
+        logger.error("Can not find serverCardId from current clientCardId = " + request.getDestinationOfFunds().getReference().getClientCardId());
+        throw new ApplicationException(new IllegalArgumentException("Can not find serverCardId on current clientCardId = " + request.getDestinationOfFunds().getReference().getClientCardId()), transferData.getId(), ApplicationException.RequestType.TRANSFER_CHECK);
+      }
+      final CheckTransferResponseDestinationOfFundsReference destinationOfFundsReference = new CheckTransferResponseDestinationOfFundsReference();
+      destinationOfFundsReference.setServerCardId(String.valueOf(serverCardId));
+      final CheckTransferResponseDestinationOfFunds destinationOfFunds = new CheckTransferResponseDestinationOfFunds();
+      destinationOfFunds.setReference(destinationOfFundsReference);
+      response.setDestinationOfFunds(destinationOfFunds);
+    }
+
+    //session
     final CheckTransferResponseSession session = new CheckTransferResponseSession();
     session.setNonce(actualNonce);
     session.setToken(request.getSession().getToken());
 
+    //signature (serialNumber + nonce + destCardId(optional) + endpointId + invoiceId + sourceCardId(optional))
     final String key = controlKey.replace("-", "");
-    final String strToHash = actualSerialNumber + actualNonce + endpointId + invoiceId;
+    final StringBuilder strToHash = new StringBuilder(actualSerialNumber);
+    strToHash.append(actualNonce);
+    if (response.getDestinationOfFunds() != null && response.getDestinationOfFunds().getReference() != null) {
+      String destCardId = response.getDestinationOfFunds().getReference().getServerCardId();
+      strToHash.append(!StrUtil.isBlank(destCardId) ? destCardId : StrUtil.EMPTY);
+    }
+    strToHash.append(endpointId);
+    strToHash.append(invoiceId);
+    if (response.getSourceOfFunds() != null && response.getSourceOfFunds().getReference() != null) {
+      String sourceCardId = response.getSourceOfFunds().getReference().getServerCardId();
+      strToHash.append(!StrUtil.isBlank(sourceCardId)? sourceCardId : StrUtil.EMPTY);
+    }
+
     try {
-      session.setCheckSignature(StrUtil.calcShaHash(strToHash.getBytes(StandardCharsets.UTF_8), key));
+      session.setCheckSignature(StrUtil.calcShaHash(strToHash.toString().getBytes(StandardCharsets.UTF_8), key));
     } catch (final GeneralSecurityException e) {
       logger.error("Exception caught generating response for invoiceId={}", invoiceId, e);
       throw new ApplicationException(e, transferData.getId(), ApplicationException.RequestType.TRANSFER_CHECK);
@@ -218,6 +257,56 @@ public class TransactionServiceImpl implements TransactionService {
       throw new ApplicationException(e, transferData.getId(), ApplicationException.RequestType.TRANSFER_CHECK);
     }
 
+    return response;
+  }
+
+  @Override
+  public NotificationResponse notificationStart(final String invoiceId, final NotificationRequest request) {
+
+    TransferData transferData = transferDataDao.findByInvoiceId(invoiceId);
+    final InitiateTransferResponse initiateTransferResponse;
+    try {
+      initiateTransferResponse = StrUtil.OBJECT_MAPPER.readValue(transferData.getInitiateTransferResponse(), InitiateTransferResponse.class);
+    } catch (final IOException e) {
+      logger.error("Exception caught: ", e);
+      throw new ApplicationException(e, transferData.getId(), ApplicationException.RequestType.TRANSFER_CHECK);
+    }
+
+    //create and save ClientCardId
+    if(request.getSourceCard() != null && request.getSourceCard().getReference() != null && !StrUtil.isBlank(request.getSourceCard().getReference().getServerCardId())) {
+      Long serverCardId = Long.valueOf(request.getSourceCard().getReference().getServerCardId());
+      String clientCardId = CardHelper.createClientCardReferenceId(serverCardId);
+      logger.info("source clientCardId : " + clientCardId + " = serverCardId :" + serverCardId);
+      CacheUtil.putServerCardId(clientCardId, serverCardId);
+    }
+    if(request.getDestinationCard() != null && request.getDestinationCard().getReference() != null && !StrUtil.isBlank(request.getDestinationCard().getReference().getServerCardId())) {
+      Long serverCardId = Long.valueOf(request.getDestinationCard().getReference().getServerCardId());
+      String clientCardId = CardHelper.createClientCardReferenceId(serverCardId);
+      logger.info("destination clientCardId : " + clientCardId + " = serverCardId :" + serverCardId);
+      CacheUtil.putServerCardId(clientCardId, serverCardId);
+    }
+
+    //make response
+    NotificationResponse response = new NotificationResponse();
+
+    response.setInvoiceId(transferData.getInvoiceId());
+    NotificationResponseSession session = new NotificationResponseSession();
+    session.setNonce(initiateTransferResponse.getSession().getNonce());
+    session.setToken(request.getSession().getToken());
+
+    //signature (nonce + endpointId + invoiceId)
+    final String key = controlKey.replace("-", "");
+    final StringBuilder strToHash = new StringBuilder(initiateTransferResponse.getSession().getNonce());
+    strToHash.append(endpointId);
+    strToHash.append(response.getInvoiceId());
+
+    try {
+      session.setCheckSignature(StrUtil.calcShaHash(strToHash.toString().getBytes(StandardCharsets.UTF_8), key));
+    } catch (final GeneralSecurityException e) {
+      logger.error("Exception caught generating response for invoiceId={}", response.getInvoiceId(), e);
+      throw new ApplicationException(e, 0L, ApplicationException.RequestType.TRANSFER_CHECK);
+    }
+    response.setSession(session);
     return response;
   }
 }

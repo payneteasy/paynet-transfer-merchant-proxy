@@ -1,15 +1,8 @@
 package com.payneteasy.merchantproxy.controller;
 
-import com.payneteasy.merchantproxy.generated.model.CheckTransferRequest;
-import com.payneteasy.merchantproxy.generated.model.CheckTransferResponse;
-import com.payneteasy.merchantproxy.generated.model.InitiateTransferRequest;
-import com.payneteasy.merchantproxy.generated.model.InitiateTransferResponse;
-import com.payneteasy.merchantproxy.generated.model.RatesRequest;
-import com.payneteasy.merchantproxy.generated.model.RatesRequestConsumer;
-import com.payneteasy.merchantproxy.generated.model.RatesRequestConsumerDevice;
-import com.payneteasy.merchantproxy.generated.model.RatesRequestSession;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.payneteasy.merchantproxy.generated.model.*;
 import com.payneteasy.merchantproxy.service.TransactionService;
-import com.payneteasy.merchantproxy.util.CacheUtil;
 import com.payneteasy.merchantproxy.util.StrUtil;
 import com.payneteasy.merchantproxy.util.TestUtils;
 
@@ -502,4 +495,37 @@ public class TransferControllerTest extends BaseControllerTest {
   private static final InitiateTransferResponse INITIATE_TRANSFER_MOCK_RESPONSE = TestUtils.createMockInitiateResponse("someUuid");
 
   private static final CheckTransferResponse CHECK_TRANSFER_MOCK_RESPONSE = TestUtils.createMockCheckResponse("someUuid");
+
+  private static final NotificationResponse NOTIFICTION_MOCK_RESPONSE = TestUtils.createMockNotificationResponse("someUid");
+
+  @Test
+  public void checkNotification() throws Exception {
+    final NotificationRequest request = TestUtils.createMockNotificationRequest();
+
+    expect(transactionServiceMock.notificationStart("someUuid", request))
+            .andReturn(NOTIFICTION_MOCK_RESPONSE)
+            .once();
+
+    replay(transactionServiceMock);
+
+    final byte[] content = StrUtil.OBJECT_MAPPER.writeValueAsBytes(request);
+
+    mockMvc.perform(post("/transfer/someUuid/notification").content(content).contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.session").isMap())
+            .andExpect(jsonPath("$.session.checkSignature").isString())
+            .andExpect(jsonPath("$.session.checkSignature").value(NOTIFICTION_MOCK_RESPONSE.getSession().getCheckSignature()))
+            .andExpect(jsonPath("$.session.nonce").isString())
+            .andExpect(jsonPath("$.session.nonce").value(NOTIFICTION_MOCK_RESPONSE.getSession().getNonce()))
+            .andExpect(jsonPath("$.session.token").isString())
+            .andExpect(jsonPath("$.session.token").value(NOTIFICTION_MOCK_RESPONSE.getSession().getToken()))
+            .andExpect(jsonPath("$.invoiceId").isString())
+            .andExpect(jsonPath("$.invoiceId").value(NOTIFICTION_MOCK_RESPONSE.getInvoiceId()))
+    ;
+
+    verify(transactionServiceMock);
+
+    reset(transactionServiceMock);
+  }
+
 }

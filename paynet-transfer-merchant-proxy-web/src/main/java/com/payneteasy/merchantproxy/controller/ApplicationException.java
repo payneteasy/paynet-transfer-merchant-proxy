@@ -2,7 +2,7 @@ package com.payneteasy.merchantproxy.controller;
 
 public class ApplicationException extends RuntimeException {
 
-  public enum RequestType { TRANSFER_INITIATE, TRANSFER_CHECK }
+  public enum RequestType { TRANSFER_INITIATE, TRANSFER_CHECK, TRANSFER_NOTIFICATION }
 
   private final Long id;
   private final RequestType requestType;
