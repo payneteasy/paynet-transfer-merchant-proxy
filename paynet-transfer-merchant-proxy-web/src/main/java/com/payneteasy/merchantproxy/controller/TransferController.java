@@ -91,9 +91,6 @@ public class TransferController implements OperationApi {
                                                    final @ApiParam(value = "Transaction data to check", required = true) @Valid @RequestBody CheckTransferRequest checkRequestData) {
     logger.info("Transfer check request: {}", checkRequestData.toString());
 
-    //TODO  del after testing
-    CacheUtil.putAccessTokenSerialNumber(checkRequestData.getSession().getAccessToken(), checkRequestData.getConsumer().getDevice().getSerialNumber());
-
     final CheckTransferResponse checkTransferResponse;
     try {
       checkTransferResponse = transactionService.checkTransfer(invoiceId, checkRequestData);
