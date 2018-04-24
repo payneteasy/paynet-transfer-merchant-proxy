@@ -1,6 +1,7 @@
 package com.payneteasy.merchantproxy.generated.model;
 
-import java.util.Objects;
+import java.util.*;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -29,6 +30,10 @@ public class CheckTransferRequest   {
   @JsonProperty("destinationOfFunds")
   @Valid
   private CheckTransferRequestDestinationOfFunds destinationOfFunds = null;
+
+  @JsonProperty("transferFeeList")
+  @Valid
+  private List<TransferFeesFromGate> transferFeeList = null;
 
   public CheckTransferRequest consumer(RequestConsumer consumer) {
     this.consumer = consumer;
@@ -132,6 +137,7 @@ public class CheckTransferRequest   {
     sb.append("    session: ").append(toIndentedString(session)).append("\n");
     sb.append("    sourceOfFunds: ").append(toIndentedString(sourceOfFunds)).append("\n");
     sb.append("    destinationOfFunds: ").append(toIndentedString(destinationOfFunds)).append("\n");
+    sb.append("    transferFeeList: ").append(transferFeeList.toString()).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -145,6 +151,19 @@ public class CheckTransferRequest   {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
+  }
+
+
+  /**
+   * Get feesFromGate
+   **/
+  @ApiModelProperty(value = "")
+  public List<TransferFeesFromGate> getTransferFeeList() {
+    return transferFeeList;
+  }
+
+  public void setTransferFeeList(List<TransferFeesFromGate> transferFeeList) {
+    this.transferFeeList = transferFeeList;
   }
 }
 

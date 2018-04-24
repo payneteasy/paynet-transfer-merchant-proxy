@@ -7,6 +7,7 @@ import com.payneteasy.merchantproxy.controller.ApplicationException;
 import com.payneteasy.merchantproxy.dao.TransferDataDao;
 import com.payneteasy.merchantproxy.util.CacheUtil;
 import com.payneteasy.merchantproxy.util.CardHelper;
+import com.payneteasy.merchantproxy.util.CollectionUtils;
 import com.payneteasy.merchantproxy.util.StrUtil;
 
 import java.io.IOException;
@@ -14,10 +15,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
-import java.util.Date;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -249,6 +247,11 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     response.setSession(session);
+
+    //fees
+    if(!CollectionUtils.isEmpty(request.getTransferFeeList())){
+      response.getFilteredTransferFeeList().add(request.getTransferFeeList().get(0));
+    }
 
     try {
       transferDataDao.setCheckTransferResponse(transferData.getId(), StrUtil.OBJECT_MAPPER.writeValueAsString(response), false);
