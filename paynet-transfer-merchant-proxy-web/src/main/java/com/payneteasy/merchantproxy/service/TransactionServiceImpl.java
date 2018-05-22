@@ -248,11 +248,6 @@ public class TransactionServiceImpl implements TransactionService {
 
     response.setSession(session);
 
-    //fees
-    if(!CollectionUtils.isEmpty(request.getTransferFeeList())){
-      response.getFilteredTransferFeeList().add(request.getTransferFeeList().get(0));
-    }
-
     try {
       transferDataDao.setCheckTransferResponse(transferData.getId(), StrUtil.OBJECT_MAPPER.writeValueAsString(response), false);
     } catch (final JsonProcessingException e) {

@@ -1,12 +1,9 @@
 package com.payneteasy.merchantproxy.generated.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.swagger.annotations.ApiModelProperty;
+
+import java.util.Objects;
 
 /**
  * CheckTransferResponse
@@ -27,10 +24,6 @@ public class CheckTransferResponse   {
 
   @JsonProperty("sourceOfFunds")
   private CheckTransferResponseSourceOfFunds sourceOfFunds = null;
-
-  @JsonProperty("filteredTransferFeeList")
-  private Collection<TransferFeesFromGate> filteredTransferFeeList = null;
-
 
   public CheckTransferResponse consumer(CheckTransferResponseConsumer consumer) {
     this.consumer = consumer;
@@ -154,7 +147,6 @@ public class CheckTransferResponse   {
     sb.append("    invoiceId: ").append(toIndentedString(invoiceId)).append("\n");
     sb.append("    session: ").append(toIndentedString(session)).append("\n");
     sb.append("    sourceOfFunds: ").append(toIndentedString(sourceOfFunds)).append("\n");
-    sb.append("    filteredTransferFeeList: ").append(filteredTransferFeeList.toString()).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -168,14 +160,6 @@ public class CheckTransferResponse   {
       return "null";
     }
     return o.toString().replace("\n", "\n    ");
-  }
-
-  @ApiModelProperty(value = "")
-  public Collection<TransferFeesFromGate> getFilteredTransferFeeList() {
-    if(filteredTransferFeeList == null){
-      filteredTransferFeeList = new ArrayList<>();
-    }
-    return filteredTransferFeeList;
   }
 }
 
