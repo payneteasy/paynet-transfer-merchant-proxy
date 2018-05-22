@@ -16,6 +16,12 @@ public class StrUtil {
 
   public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
+  public static final String EMPTY = "";
+
+  public static boolean isBlank(String text){
+    return text == null || text.isEmpty();
+  }
+
   // Alphanumeric characters (62) + 2 special characters (for 64 total length to optimize random number generator)
   private static final char[] CHAR_ARRAY
       = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ^$".toCharArray();

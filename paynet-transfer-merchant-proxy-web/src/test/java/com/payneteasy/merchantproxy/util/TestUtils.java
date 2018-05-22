@@ -1,21 +1,6 @@
 package com.payneteasy.merchantproxy.util;
 
-import com.payneteasy.merchantproxy.generated.model.AccessTokenResponseSession;
-import com.payneteasy.merchantproxy.generated.model.CheckTransferRequest;
-import com.payneteasy.merchantproxy.generated.model.CheckTransferRequestConsumer;
-import com.payneteasy.merchantproxy.generated.model.CheckTransferRequestConsumerDevice;
-import com.payneteasy.merchantproxy.generated.model.CheckTransferRequestSession;
-import com.payneteasy.merchantproxy.generated.model.CheckTransferResponse;
-import com.payneteasy.merchantproxy.generated.model.CheckTransferResponseSession;
-import com.payneteasy.merchantproxy.generated.model.InitiateTransferRequest;
-import com.payneteasy.merchantproxy.generated.model.InitiateTransferRequestConsumer;
-import com.payneteasy.merchantproxy.generated.model.InitiateTransferRequestConsumerDevice;
-import com.payneteasy.merchantproxy.generated.model.InitiateTransferRequestTransaction;
-import com.payneteasy.merchantproxy.generated.model.InitiateTransferResponse;
-import com.payneteasy.merchantproxy.generated.model.InitiateTransferResponseRates;
-import com.payneteasy.merchantproxy.generated.model.InitiateTransferResponseSession;
-
-import java.util.UUID;
+import com.payneteasy.merchantproxy.generated.model.*;
 
 public class TestUtils {
 
@@ -46,11 +31,11 @@ public class TestUtils {
   }
 
   public static CheckTransferRequest createMockCheckRequest() {
-    final CheckTransferRequestConsumerDevice checkTransferRequestConsumerDevice = new CheckTransferRequestConsumerDevice();
-    checkTransferRequestConsumerDevice.setSerialNumber("abcd");
+    final CheckRequestConsumerDevice checkRequestConsumerDevice = new CheckRequestConsumerDevice();
+    checkRequestConsumerDevice.setSerialNumber("abcd");
 
-    final CheckTransferRequestConsumer checkTransferRequestConsumer = new CheckTransferRequestConsumer();
-    checkTransferRequestConsumer.setDevice(checkTransferRequestConsumerDevice);
+    final RequestConsumer requestConsumer = new RequestConsumer();
+    requestConsumer.setDevice(checkRequestConsumerDevice);
 
     final CheckTransferRequestSession checkTransferRequestSession = new CheckTransferRequestSession();
     checkTransferRequestSession.setAccessToken("123456789012345678901234567890123456789012345678901234567890abcd");
@@ -60,7 +45,7 @@ public class TestUtils {
 
     final CheckTransferRequest checkTransferRequest = new CheckTransferRequest();
     checkTransferRequest.setSession(checkTransferRequestSession);
-    checkTransferRequest.setConsumer(checkTransferRequestConsumer);
+    checkTransferRequest.setConsumer(requestConsumer);
 
     return checkTransferRequest;
   }
@@ -97,4 +82,37 @@ public class TestUtils {
 
     return checkTransferResponse;
   }
+
+  public static NotificationResponse createMockNotificationResponse(final String invoiceId) {
+    final NotificationResponse notificationResponse = new NotificationResponse();
+
+    final NotificationResponseSession notificationResponseSession = new NotificationResponseSession();
+    notificationResponseSession.setCheckSignature("abcd1234xyz");
+    notificationResponseSession.setNonce("5678xyz");
+    notificationResponseSession.setToken("qwerty");
+
+    notificationResponse.setSession(notificationResponseSession);
+    notificationResponse.setInvoiceId(invoiceId);
+
+    return notificationResponse;
+  }
+
+  public static NotificationRequest createMockNotificationRequest() {
+    final CheckRequestConsumerDevice checkRequestConsumerDevice = new CheckRequestConsumerDevice();
+    checkRequestConsumerDevice.setSerialNumber("abcd");
+
+    final RequestConsumer requestConsumer = new RequestConsumer();
+    requestConsumer.setDevice(checkRequestConsumerDevice);
+
+    final NotificationRequestSession session = new NotificationRequestSession();
+    session.setAccessToken("123456789012345678901234567890123456789012345678901234567890abcd");
+    session.setToken("qwerty");
+
+    final NotificationRequest request = new NotificationRequest();
+    request.setSession(session);
+    request.setConsumer(requestConsumer);
+
+    return request;
+  }
+
 }

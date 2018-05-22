@@ -8,16 +8,16 @@ import io.swagger.annotations.ApiModelProperty;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
 /**
- * CheckTransferRequestConsumer
+ * RequestConsumer
  */
 
-public class CheckTransferRequestConsumer   {
+public class RequestConsumer {
   @JsonProperty("device")
   @Valid
   @NotNull
-  private CheckTransferRequestConsumerDevice device = null;
+  private CheckRequestConsumerDevice device = null;
 
-  public CheckTransferRequestConsumer device(CheckTransferRequestConsumerDevice device) {
+  public RequestConsumer device(CheckRequestConsumerDevice device) {
     this.device = device;
     return this;
   }
@@ -27,11 +27,11 @@ public class CheckTransferRequestConsumer   {
    * @return device
   **/
   @ApiModelProperty(value = "")
-  public CheckTransferRequestConsumerDevice getDevice() {
+  public CheckRequestConsumerDevice getDevice() {
     return device;
   }
 
-  public void setDevice(CheckTransferRequestConsumerDevice device) {
+  public void setDevice(CheckRequestConsumerDevice device) {
     this.device = device;
   }
 
@@ -44,8 +44,8 @@ public class CheckTransferRequestConsumer   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    CheckTransferRequestConsumer checkTransferRequestConsumer = (CheckTransferRequestConsumer) o;
-    return Objects.equals(this.device, checkTransferRequestConsumer.device);
+    RequestConsumer requestConsumer = (RequestConsumer) o;
+    return Objects.equals(this.device, requestConsumer.device);
   }
 
   @Override
@@ -56,7 +56,7 @@ public class CheckTransferRequestConsumer   {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class CheckTransferRequestConsumer {\n");
+    sb.append("class RequestConsumer {\n");
     
     sb.append("    device: ").append(toIndentedString(device)).append("\n");
     sb.append("}");

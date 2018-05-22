@@ -15,7 +15,7 @@ import org.apache.catalina.webresources.StandardRoot;
 public class StartApp {
 
   public static void main(final String... args) throws ServletException, LifecycleException, MalformedURLException {
-    final String webappDirLocation = "paynet-transfer-merchant-proxy-web/src/main/webapp/";
+    final String webappDirLocation = "paynet-transfer-merchant-proxy-web/target/libs/";
     final Tomcat tomcat = new Tomcat();
     tomcat.setBaseDir("target");
 

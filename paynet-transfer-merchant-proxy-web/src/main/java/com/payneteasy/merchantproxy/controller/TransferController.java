@@ -1,17 +1,11 @@
 package com.payneteasy.merchantproxy.controller;
 
-import com.payneteasy.merchantproxy.generated.controller.TransferApi;
-import com.payneteasy.merchantproxy.generated.model.CheckTransferRequest;
-import com.payneteasy.merchantproxy.generated.model.CheckTransferResponse;
-import com.payneteasy.merchantproxy.generated.model.InitiateTransferRequest;
-import com.payneteasy.merchantproxy.generated.model.InitiateTransferResponse;
-import com.payneteasy.merchantproxy.generated.model.RatesRequest;
-import com.payneteasy.merchantproxy.generated.model.RatesResponse;
+import com.payneteasy.merchantproxy.generated.controller.OperationApi;
+import com.payneteasy.merchantproxy.generated.model.*;
 import com.payneteasy.merchantproxy.service.TransactionService;
 import com.payneteasy.merchantproxy.util.CacheUtil;
 
 import java.math.BigDecimal;
-import java.security.GeneralSecurityException;
 
 import javax.validation.Valid;
 
@@ -30,7 +24,7 @@ import io.swagger.annotations.ApiParam;
 
 @Controller
 @CrossOrigin
-public class TransferController implements TransferApi {
+public class TransferController implements OperationApi {
 
   private final Logger logger = LoggerFactory.getLogger(TransferController.class);
 
@@ -56,7 +50,7 @@ public class TransferController implements TransferApi {
   }
 
   @Override
-  public ResponseEntity<Object> transferGetRatePost(final @ApiParam(value = "Session info" ,required=true )  @Valid @RequestBody RatesRequest sessionData) {
+  public ResponseEntity<Object> getRateOperationPost(final @ApiParam(value = "Session info" ,required=true )  @Valid @RequestBody RatesRequest sessionData) {
     CacheUtil.putAccessTokenSerialNumber(sessionData.getSession().getAccessToken(), sessionData.getConsumer().getDevice().getSerialNumber());
 
     final RatesResponse response = new RatesResponse()
@@ -70,9 +64,10 @@ public class TransferController implements TransferApi {
 
 
   @Override
-  public ResponseEntity<Object> transferInitiateTransferPost(@ApiParam(value = "Device info, location data, session info, amount", required = true) final @Valid @RequestBody InitiateTransferRequest initiateTransferData) {
+  public ResponseEntity<Object> initiateOperationPost(@ApiParam(value = "Device info, location data, session info, amount", required = true) final @Valid @RequestBody InitiateTransferRequest initiateTransferData) {
     logger.info("Initiate transfer, request is {}", initiateTransferData.toString());
 
+    CacheUtil.putAccessTokenSerialNumber(initiateTransferData.getSession().getAccessToken(), initiateTransferData.getConsumer().getDevice().getSerialNumber());
     final InitiateTransferResponse initiateTransactionResponse;
     try {
       initiateTransactionResponse = transactionService.initiateTransaction(initiateTransferData);
@@ -92,8 +87,8 @@ public class TransferController implements TransferApi {
   }
 
   @Override
-  public ResponseEntity<Object> transferInvoiceIdCheckPost(@ApiParam(value = "Previously generated transfer transaction identifier", required = true) final @PathVariable("invoiceId") String invoiceId,
-                                                           final @ApiParam(value = "Transaction data to check", required = true) @Valid @RequestBody CheckTransferRequest checkRequestData) {
+  public ResponseEntity<Object> checkOperationPost(@ApiParam(value = "Previously generated transfer transaction identifier", required = true) final @PathVariable("invoiceId") String invoiceId,
+                                                   final @ApiParam(value = "Transaction data to check", required = true) @Valid @RequestBody CheckTransferRequest checkRequestData) {
     logger.info("Transfer check request: {}", checkRequestData.toString());
 
     final CheckTransferResponse checkTransferResponse;
@@ -112,5 +107,27 @@ public class TransferController implements TransferApi {
     logger.info("Transfer check result: {}", checkTransferResponse.toString());
 
     return new ResponseEntity<>(checkTransferResponse, HttpStatus.OK);
+  }
+
+  @Override
+  public ResponseEntity<Object> mappingNotificationOperationPost(final @ApiParam(value = "Previously generated transfer transaction identifier",required=true ) @PathVariable("invoiceId") String invoiceId, final @Valid @RequestBody NotificationRequest notificationRequestData) {
+    logger.info("Transfer notification request: {}", notificationRequestData.toString());
+
+    final NotificationResponse notificationTransferResponse;
+    try {
+      notificationTransferResponse = transactionService.notificationStart(invoiceId, notificationRequestData);
+    } catch (final IllegalArgumentException e) {
+      logger.error("Error on notification check", e);
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    } catch (final ApplicationException e) {
+      throw e;
+    } catch (final Exception e) {
+      logger.error("Exception caught:", e);
+      throw new ApplicationException(e, null, ApplicationException.RequestType.TRANSFER_NOTIFICATION);
+    }
+
+    logger.info("Transfer notification result: {}", notificationTransferResponse.toString());
+
+    return new ResponseEntity<>(notificationTransferResponse, HttpStatus.OK);
   }
 }

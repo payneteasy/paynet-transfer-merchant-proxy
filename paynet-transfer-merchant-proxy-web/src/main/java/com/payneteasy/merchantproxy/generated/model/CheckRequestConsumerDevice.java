@@ -6,21 +6,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.Valid;
-import javax.validation.constraints.*;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
 /**
- * CheckTransferRequestConsumerDevice
+ * CheckRequestConsumerDevice
  */
 
-public class CheckTransferRequestConsumerDevice   {
+public class CheckRequestConsumerDevice {
   @JsonProperty("serialNumber")
   @Valid
   @NotEmpty
   private String serialNumber = null;
 
-  public CheckTransferRequestConsumerDevice serialNumber(String serialNumber) {
+  public CheckRequestConsumerDevice serialNumber(String serialNumber) {
     this.serialNumber = serialNumber;
     return this;
   }
@@ -47,8 +46,8 @@ public class CheckTransferRequestConsumerDevice   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    CheckTransferRequestConsumerDevice checkTransferRequestConsumerDevice = (CheckTransferRequestConsumerDevice) o;
-    return Objects.equals(this.serialNumber, checkTransferRequestConsumerDevice.serialNumber);
+    CheckRequestConsumerDevice checkRequestConsumerDevice = (CheckRequestConsumerDevice) o;
+    return Objects.equals(this.serialNumber, checkRequestConsumerDevice.serialNumber);
   }
 
   @Override
@@ -59,7 +58,7 @@ public class CheckTransferRequestConsumerDevice   {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class CheckTransferRequestConsumerDevice {\n");
+    sb.append("class CheckRequestConsumerDevice {\n");
     
     sb.append("    serialNumber: ").append(toIndentedString(serialNumber)).append("\n");
     sb.append("}");
