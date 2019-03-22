@@ -1,3 +1,13 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.owasp:dependency-check-gradle:4.0.2'
+    }
+}
+
+apply plugin: 'org.owasp.dependencycheck'
 apply plugin: 'maven'
 apply plugin: 'java'
 apply plugin: 'war'
@@ -25,13 +35,13 @@ if (!project.hasProperty("profile")) {
 
 dependencies {
 
-    def springVersion = '4.3.8.RELEASE'
+    def springVersion = '4.3.22.RELEASE'
     def slf4jVersion = '1.7.25'
     def tomcatVersion = '8.0.28'
-    def guavaVersion = '21.0'
+    def guavaVersion = '27.1-jre'
     def logbackVersion = '1.2.2'
     def junitVersion = '4.12'
-    def jacksonVersion = '2.8.7'
+    def jacksonVersion = '2.9.8'
     def hibernateValidatorVersion = '5.4.1.Final'
     def h2dbVersion = '1.4.195'
 
@@ -95,3 +105,23 @@ task testJar(type: Jar) {
 artifacts {
     testArtifacts testJar
 }
+
+configurations {
+    depCheck
+}
+
+dependencies {
+    depCheck "org.owasp:dependency-check-ant:4.0.2"
+}
+
+task checkDeps { doLast {
+    ant.taskdef(name: 'checkDepsTask',
+            classname: 'org.owasp.dependencycheck.taskdefs.Check',
+            classpath: configurations.depCheck.asPath)
+
+    ant.checkDepsTask(projectName: "gasicredit-${version}") {
+        path {
+            pathelement(path: sourceSets.main.runtimeClasspath.asPath)
+        }
+    }
+}}
