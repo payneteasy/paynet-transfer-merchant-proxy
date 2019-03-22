@@ -6,3 +6,4 @@ target
 catalina.base_IS_UNDEFINED
 .ideaDataSources
 .swagger-codegen
+.gradle
