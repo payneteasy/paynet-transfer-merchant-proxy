@@ -106,22 +106,6 @@ artifacts {
     testArtifacts testJar
 }
 
-configurations {
-    depCheck
+dependencyCheck {
+    format = 'XML'
 }
-
-dependencies {
-    depCheck "org.owasp:dependency-check-ant:4.0.2"
-}
-
-task checkDeps { doLast {
-    ant.taskdef(name: 'checkDepsTask',
-            classname: 'org.owasp.dependencycheck.taskdefs.Check',
-            classpath: configurations.depCheck.asPath)
-
-    ant.checkDepsTask(projectName: "gasicredit-${version}") {
-        path {
-            pathelement(path: sourceSets.main.runtimeClasspath.asPath)
-        }
-    }
-}}
