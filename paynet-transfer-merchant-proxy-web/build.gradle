@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'org.owasp:dependency-check-gradle:5.0.0-M3.1'
+        classpath "org.owasp:dependency-check-gradle:${property('ext.owasp.dependencyCheck.version')}"
     }
 }
 
@@ -67,8 +67,8 @@ dependencies {
     testCompile "org.springframework:spring-test:${springVersion}"
     testCompile "junit:junit:${junitVersion}"
     testCompile "org.hamcrest:hamcrest-all:1.3",
-                "com.jayway.jsonpath:json-path:2.2.0",
-                "org.easymock:easymock:3.4"
+            "com.jayway.jsonpath:json-path:2.2.0",
+            "org.easymock:easymock:3.4"
 
     providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
 
@@ -107,5 +107,5 @@ artifacts {
 }
 
 dependencyCheck {
-    format = 'XML'
+    format = "${property('ext.owasp.dependencyCheck.format')}"
 }
