@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "org.owasp:dependency-check-gradle:${property('ext.owasp.dependencyCheck.version')}"
+        classpath "org.owasp:dependency-check-gradle:${property('owasp.dependencyCheck.version')}"
     }
 }
 
@@ -107,5 +107,5 @@ artifacts {
 }
 
 dependencyCheck {
-    format = "${property('ext.owasp.dependencyCheck.format')}"
+    format = "${property('owasp.dependencyCheck.format')}"
 }
