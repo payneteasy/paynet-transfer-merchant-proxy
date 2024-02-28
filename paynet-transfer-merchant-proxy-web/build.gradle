@@ -35,15 +35,15 @@ if (!project.hasProperty("profile")) {
 
 dependencies {
 
-    def springVersion = '4.3.27.RELEASE'
-    def slf4jVersion = '1.7.25'
+    def springVersion = '5.3.32'
+    def slf4jVersion = '2.0.12'
     def tomcatVersion = '8.0.28'
-    def guavaVersion = '27.1-jre'
-    def logbackVersion = '1.2.2'
+    def guavaVersion = '33.0.0-jre'
+    def logbackVersion = '1.5.0'
     def junitVersion = '4.12'
-    def jacksonVersion = '2.9.10.5'
-    def hibernateValidatorVersion = '5.4.1.Final'
-    def h2dbVersion = '1.4.195'
+    def jacksonVersion = '2.16.1'
+    def hibernateValidatorVersion = '6.2.5.Final'
+    def h2dbVersion = '2.2.224'
 
     compile "com.google.guava:guava:${guavaVersion}"
 
@@ -108,4 +108,5 @@ artifacts {
 
 dependencyCheck {
     format = "${property('owasp.dependencyCheck.format')}"
+    suppressionFile = project.file("suppress.xml").absolutePath
 }
