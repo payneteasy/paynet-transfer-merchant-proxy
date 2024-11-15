@@ -18,10 +18,10 @@ dependencies {
     def springVersion = '4.3.8.RELEASE'
     def junitVersion = '4.12'
 
-    compile project(':paynet-transfer-merchant-proxy-web')
+    compile project(':paynet-transfer-merchant-proxy-web') //Justification: web app for integration tests
 
-    testCompile project(path: ':paynet-transfer-merchant-proxy-web', configuration: 'testArtifacts')
+    testCompile project(path: ':paynet-transfer-merchant-proxy-web', configuration: 'testArtifacts') //Justification: web app for integration tests
 
-    testCompile "org.springframework:spring-test:${springVersion}"
-    testCompile "junit:junit:${junitVersion}"
+    testCompile "org.springframework:spring-test:${springVersion}" //Justification: spring module for framework based testing
+    testCompile "junit:junit:${junitVersion}" //Justification: library for project unit tests
 }
